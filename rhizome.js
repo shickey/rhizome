@@ -19,9 +19,14 @@
     }))
     .append('g');
 
-  svg.append('circle')
-    .attr("cx", document.body.clientWidth / 2)
-    .attr("cy", document.body.clientHeight / 2)
-    .attr("r", 50)
-    .style("fill", "#aaa");
+  var data = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+
+  svg.selectAll('circle')
+    .data(data)
+    .enter()
+      .append('circle')
+      .attr("cx", function(d, i) { return (document.body.clientWidth / 2) + (200 * i); })
+      .attr("cy", document.body.clientHeight / 2)
+      .attr("r", 50)
+      .style("fill", "#aaa");
 })();
