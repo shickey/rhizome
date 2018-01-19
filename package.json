@@ -1,0 +1,22 @@
+{
+  "name": "rhizome",
+  "version": "0.0.1",
+  "description": "Collective knowledge building",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shickey/rhizome.git"
+  },
+  "author": "Sean Hickey",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shickey/rhizome/issues"
+  },
+  "homepage": "https://github.com/shickey/rhizome#readme",
+  "dependencies": {
+    "firebase": "^4.9.0"
+  }
+}
