@@ -41,13 +41,12 @@
   
   function nodeDragStart(d) {
     d3.select(this).raise();
-    console.log(d3.select(this));
-    console.log(d);
   }
   
   function nodeDragDragging(d) {
-    var newX = d3.event.x;
-    var newY = d3.event.y;
+    // debugger;
+    var newX = d.value.x + d3.event.dx;
+    var newY = d.value.y + d3.event.dy;
     d.value.x = newX;
     d.value.y = newY;
     d3.select(this)
