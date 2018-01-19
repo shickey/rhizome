@@ -1,9 +1,10 @@
 # TODO
 
 [x] App boot
+[x] Drag and drop nodes
+[x] Data storage/backend setup
 [ ] Create nodes
 [ ] Link nodes
-[ ] Data storage/backend
 [ ] Differentiate nodes (text, image, video, URL, etc)
 [ ] Users and authorship
 [ ] Visibility rules (public by default, private by choice)

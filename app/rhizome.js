@@ -23,6 +23,8 @@
     messagingSenderId: "614011893394"
   };
   firebase.initializeApp(firebaseConfig);
+  
+  var db = firebase.database();
 
   // var initialZoom = d3.zoomIdentity.translate((-document.body.clientWidth / 2), (-document.body.clientHeight / 2)).scale(1);
   // var zoom = );
@@ -37,27 +39,52 @@
   
   var data = [];
   
+  function nodeDragStart(d) {
+    d3.select(this).raise();
+    console.log(d3.select(this));
+    console.log(d);
+  }
+  
+  function nodeDragDragging(d) {
+    var newX = d3.event.x;
+    var newY = d3.event.y;
+    d.value.x = newX;
+    d.value.y = newY;
+    d3.select(this)
+      .attr('cx', newX)
+      .attr('cy', newY);
+  }
+  
+  function nodeDragEnd(d) {
+    db.ref('nodes/' + d.key).set(d.value);
+  }
+  
+  var nodeDrag = d3.drag()
+    .on('start', nodeDragStart)
+    .on('drag', nodeDragDragging)
+    .on('end', nodeDragEnd)
+  
   function updateNodes() {
     svg.selectAll('circle')
     .data(data)
-      .attr("cx", function(d) { return d.x; })
-      .attr("cy", function(d) { return d.y; })
-      .attr("r", 50)
-      .style("fill", function(d) { return d.color; })
+      .attr('cx', function(d) { return d.value.x; })
+      .attr('cy', function(d) { return d.value.y; })
+      .attr('r', 50)
+      .style('fill', function(d) { return d.value.color; })
+      .call(nodeDrag)
     .enter()
       .append('circle')
-      .attr("cx", function(d) { return d.x; })
-      .attr("cy", function(d) { return d.y; })
-      .attr("r", 50)
-      .style("fill", function(d) { return d.color; })
+      .attr('cx', function(d) { return d.value.x; })
+      .attr('cy', function(d) { return d.value.y; })
+      .attr('r', 50)
+      .style('fill', function(d) { return d.value.color; })
+      .call(nodeDrag)
     .exit()
       .remove();
   }
   
-  var db = firebase.database();
-  
   db.ref('nodes').on('value', function(snapshot) {
-    data = d3.values(snapshot.val());
+    data = d3.entries(snapshot.val());
     updateNodes();
   });
   
