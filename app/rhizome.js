@@ -27,24 +27,28 @@
   var db = firebase.database();
 
   // var initialZoom = d3.zoomIdentity.translate((-document.body.clientWidth / 2), (-document.body.clientHeight / 2)).scale(1);
-  // var zoom = );
+  var zoom = d3.zoom()
+    .filter(function() {
+      return (!d3.event.button && !d3.event.altKey);
+    })
+    .on('zoom', function() {
+      svg.attr('transform', d3.event.transform);
+    });
   var svg = d3.select('body')
     .append('svg')
     .attr('width', '100%')
     .attr('height', '100%')
-    .call(d3.zoom().on('zoom', function() {
-      svg.attr('transform', d3.event.transform);
-    }))
+    .call(zoom)
     .append('g');
   
-  var data = [];
+  var nodeData = [];
+  var edgeData = [];
   
   function nodeDragStart(d) {
     d3.select(this).raise();
   }
   
   function nodeDragDragging(d) {
-    // debugger;
     var newX = d.value.x + d3.event.dx;
     var newY = d.value.y + d3.event.dy;
     d.value.x = newX;
@@ -59,18 +63,49 @@
   }
   
   var nodeDrag = d3.drag()
+    .filter(function() {
+      return (!d3.event.button && !d3.event.altKey);
+    })
     .on('start', nodeDragStart)
     .on('drag', nodeDragDragging)
-    .on('end', nodeDragEnd)
+    .on('end', nodeDragEnd);
+  
+  var addingEdge = null;
+  function nodeMouseDown(d) {
+    if (d3.event.altKey && !addingEdge) {
+      // Capture the id of the first node
+      addingEdge = d.key;
+    }
+  }
+  
+  function nodeMouseUp(d) {
+    if (addingEdge && d.key !== addingEdge) {
+      // If we've successfully dragged to a different node,
+      // create an edge
+      //
+      // TODO: Should it be possible to create an edge
+      //       with the same start and end node?
+      //
+      // TODO: Should we check for duplicate edges?
+      edgeData.push({
+        start: addingEdge,
+        end: d.key
+      });
+    }
+    addingEdge = null;
+    updateEdges();
+  }
   
   function updateNodes() {
     svg.selectAll('circle')
-    .data(data)
+    .data(d3.entries(nodeData))
       .attr('cx', function(d) { return d.value.x; })
       .attr('cy', function(d) { return d.value.y; })
       .attr('r', 50)
       .style('fill', function(d) { return d.value.color; })
       .call(nodeDrag)
+      .on('mousedown', nodeMouseDown)
+      .on('mouseup', nodeMouseUp)
     .enter()
       .append('circle')
       .attr('cx', function(d) { return d.value.x; })
@@ -78,12 +113,36 @@
       .attr('r', 50)
       .style('fill', function(d) { return d.value.color; })
       .call(nodeDrag)
+      .on('mousedown', nodeMouseDown)
+      .on('mouseup', nodeMouseUp)
+    .exit()
+      .remove();
+    updateEdges();
+  }
+  
+  function updateEdges() {
+    svg.selectAll('line')
+    .data(edgeData)
+      .attr('x1', function(d) { return nodeData[d.start].x; })
+      .attr('y1', function(d) { return nodeData[d.start].y; })
+      .attr('x2', function(d) { return nodeData[d.end].x; })
+      .attr('y2', function(d) { return nodeData[d.end].y; })
+      .attr('stroke-width', 2)
+      .attr('stroke', 'black')
+    .enter()
+      .append('line')
+      .attr('x1', function(d) { return nodeData[d.start].x; })
+      .attr('y1', function(d) { return nodeData[d.start].y; })
+      .attr('x2', function(d) { return nodeData[d.end].x; })
+      .attr('y2', function(d) { return nodeData[d.end].y; })
+      .attr('stroke-width', 2)
+      .attr('stroke', 'black')
     .exit()
       .remove();
   }
   
   db.ref('nodes').on('value', function(snapshot) {
-    data = d3.entries(snapshot.val());
+    nodeData = snapshot.val();
     updateNodes();
   });
   
