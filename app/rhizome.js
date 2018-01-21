@@ -25,6 +25,8 @@
   firebase.initializeApp(firebaseConfig);
   
   var db = firebase.database();
+  
+  var addingEdge = null;
 
   // var initialZoom = d3.zoomIdentity.translate((-document.body.clientWidth / 2), (-document.body.clientHeight / 2)).scale(1);
   var zoom = d3.zoom()
@@ -56,6 +58,7 @@
     d3.select(this)
       .attr('cx', newX)
       .attr('cy', newY);
+    updateEdges();
   }
   
   function nodeDragEnd(d) {
@@ -70,7 +73,13 @@
     .on('drag', nodeDragDragging)
     .on('end', nodeDragEnd);
   
-  var addingEdge = null;
+  // TODO: This is the wrong way to do this. We should instead
+  //       capture mouse events on ths svg area and check to see
+  //       if those intersect nodes. Currently, this causes bugs
+  //       e.g., when the user alt-clicks a node, releases over blank
+  //       canvas, then click again over blank canvas and releases
+  //       over a different node (which should not create an edge
+  //       but it currently does)
   function nodeMouseDown(d) {
     if (d3.event.altKey && !addingEdge) {
       // Capture the id of the first node
@@ -97,48 +106,61 @@
   }
   
   function updateNodes() {
-    svg.selectAll('circle')
-    .data(d3.entries(nodeData))
-      .attr('cx', function(d) { return d.value.x; })
+    var nodes = svg.selectAll('circle')
+      .data(d3.entries(nodeData));
+    
+    nodes.exit().remove();
+    
+    var updateAndEnter = nodes.enter()
+        .append('circle')
+      .merge(nodes);
+      
+    updateAndEnter.attr('cx', function(d) { return d.value.x; })
       .attr('cy', function(d) { return d.value.y; })
-      .attr('r', 50)
-      .style('fill', function(d) { return d.value.color; })
-      .call(nodeDrag)
-      .on('mousedown', nodeMouseDown)
-      .on('mouseup', nodeMouseUp)
-    .enter()
-      .append('circle')
-      .attr('cx', function(d) { return d.value.x; })
-      .attr('cy', function(d) { return d.value.y; })
-      .attr('r', 50)
-      .style('fill', function(d) { return d.value.color; })
-      .call(nodeDrag)
-      .on('mousedown', nodeMouseDown)
-      .on('mouseup', nodeMouseUp)
-    .exit()
-      .remove();
+      .attr('r', 50);
+    
+    updateAndEnter.style('fill', function(d) { return d.value.color; })
+        .call(nodeDrag)
+        .on('mousedown', nodeMouseDown)
+        .on('mouseup', nodeMouseUp);
+        
+        
+    var textboxes = svg.selectAll('foreignObject')
+      .data(d3.entries(nodeData));
+    
+    textboxes.exit().remove();
+    
+    textboxes.enter().append('foreignObject')
+      .append('xhtml:div')
+        .append('div')
+          .attr('width', '100%')
+          .attr('height', '100%')
+          .html('hello world!')
+      .merge(textboxes)
+        .attr('x', function(d) { return d.value.x; })
+        .attr('y', function(d) { return d.value.y; })
+        .attr('width', 300)
+        .attr('height', 300)
+        
+    
     updateEdges();
   }
   
   function updateEdges() {
-    svg.selectAll('line')
-    .data(edgeData)
-      .attr('x1', function(d) { return nodeData[d.start].x; })
-      .attr('y1', function(d) { return nodeData[d.start].y; })
-      .attr('x2', function(d) { return nodeData[d.end].x; })
-      .attr('y2', function(d) { return nodeData[d.end].y; })
-      .attr('stroke-width', 2)
-      .attr('stroke', 'black')
-    .enter()
-      .append('line')
-      .attr('x1', function(d) { return nodeData[d.start].x; })
-      .attr('y1', function(d) { return nodeData[d.start].y; })
-      .attr('x2', function(d) { return nodeData[d.end].x; })
-      .attr('y2', function(d) { return nodeData[d.end].y; })
-      .attr('stroke-width', 2)
-      .attr('stroke', 'black')
-    .exit()
-      .remove();
+    var edges = svg.selectAll('line')
+      .data(edgeData);
+    
+    edges.exit().remove();
+    
+    edges.enter()
+        .append('line')
+      .merge(edges)
+        .attr('x1', function(d) { return nodeData[d.start].x; })
+        .attr('y1', function(d) { return nodeData[d.start].y; })
+        .attr('x2', function(d) { return nodeData[d.end].x; })
+        .attr('y2', function(d) { return nodeData[d.end].y; })
+        .attr('stroke-width', 2)
+        .attr('stroke', 'black');
   }
   
   db.ref('nodes').on('value', function(snapshot) {
