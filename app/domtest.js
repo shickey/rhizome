@@ -47,15 +47,15 @@
     {
       x: 100,
       y: 100,
-      w: 100,
-      h: 200,
+      w: 200,
+      h: 100,
       content: "hello world!"
     },
     {
       x: 300,
       y: 750,
       w: 100,
-      h: 200,
+      h: 50,
       content: "foo bar baz!"
     }
   ];
@@ -95,8 +95,8 @@
     entering.append('span').text(function(d) { return d.content; });
 
     entering.merge(nodes)
-        .style('width', function(d) { return d.w; })
-        .style('height', function(d) { return d.h; })
+        .style('width', function(d) { return d.w + 'px'; })
+        .style('height', function(d) { return d.h + 'px'; })
         .style('transform', function(d) { return 'translate(' + d.x + 'px,' + d.y + 'px)'})
         .call(nodeDrag);
     //   .attr('cx', function(d) { return d.value.x; })
