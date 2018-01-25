@@ -26,22 +26,20 @@
   
   // var db = firebase.database();
 
-  // var initialZoom = d3.zoomIdentity.translate((-document.body.clientWidth / 2), (-document.body.clientHeight / 2)).scale(1);
-  // var zoom = );
-  var canvas = d3.select('#container')
+  var canvas = d3.select('#canvas');
+  var container = d3.select('#container')
     .append('div')
     .attr('id', 'canvas')
     .style('width', '100%')
     .style('height', '100vh')
     .style('min-height', '100vh')
-    .call(d3.zoom().on('zoom', function() {
-      var transform = d3.event.transform;
-      if (transform.k < 0.6 || transform.k > 3) {
-        return;
-      }
-      var transformString = 'matrix(' + transform.k + ',0,0,' + transform.k + ',' + transform.x + ',' + transform.y + ')';
-      canvas.style('transform', transformString);
-    }));
+    .call(d3.zoom()
+      .scaleExtent([0.6, 3])
+      .on('zoom', function() {
+        var transform = d3.event.transform;
+        var transformString = 'matrix(' + transform.k + ',0,0,' + transform.k + ',' + transform.x + ',' + transform.y + ')';
+        canvas.style('transform', transformString);
+      }));
   
   var data = [
     {
