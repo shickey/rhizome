@@ -25,6 +25,8 @@
   // firebase.initializeApp(firebaseConfig);
   
   // var db = firebase.database();
+  
+  var currentTransform = d3.zoomIdentity;
 
   var canvas = d3.select('#canvas');
   var container = d3.select('#container')
@@ -36,8 +38,8 @@
     .call(d3.zoom()
       .scaleExtent([0.6, 3])
       .on('zoom', function() {
-        var transform = d3.event.transform;
-        var transformString = 'matrix(' + transform.k + ',0,0,' + transform.k + ',' + transform.x + ',' + transform.y + ')';
+        currentTransform = d3.event.transform;
+        var transformString = 'matrix(' + currentTransform.k + ',0,0,' + currentTransform.k + ',' + currentTransform.x + ',' + currentTransform.y + ')';
         canvas.style('transform', transformString);
       }));
   
@@ -63,8 +65,8 @@
   }
   
   function nodeDragDragging(d) {
-    var newX = d.x + d3.event.dx;
-    var newY = d.y + d3.event.dy;
+    var newX = d.x + d3.event.dx / currentTransform.k;
+    var newY = d.y + d3.event.dy / currentTransform.k;
     d.x = newX;
     d.y = newY;
     d3.select(this)
