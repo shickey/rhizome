@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <script src="https://www.gstatic.com/firebasejs/4.8.2/firebase.js"></script>
   <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css">
   <link href="https://fonts.googleapis.com/css?family=Lato:300|Roboto+Condensed" rel="stylesheet">
   <style>
   *, *:before, *:after {
@@ -44,6 +47,10 @@
     font-size: 13px;
     padding-top: .4em;
   }
+
+  .ui-icon-gripsmall-diagonal-se {
+    opacity: 0;
+  }
   
 </style>
 <title>Rhizome</title>
@@ -62,5 +69,12 @@
     </div>
   </div>
   <script type="text/javascript" src="domtest.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $(".nice").resizable({
+        handles: 'all'
+      });
+    })
+  </script>
 </body>
 </html>
