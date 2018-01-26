@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <script src="https://www.gstatic.com/firebasejs/4.8.2/firebase.js"></script>
   <script src="https://d3js.org/d3.v4.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Lato:300|Roboto+Condensed" rel="stylesheet">
   <style>
   *, *:before, *:after {
     box-sizing: border-box;
@@ -15,12 +16,50 @@
     background-color: #ddd;
     border: 1px solid black;
   }
+  
+  .nice {
+    font-family: 'Lato', sans-serif;
+    position: absolute;
+    top: 100px;
+    left: 400px;
+    width: 200px;
+    height: 300px;
+    border-right: 1px solid #CFCBCA;
+    border-bottom: 1px solid #CFCBCA;
+    border-left: 1px solid #E8E4E3;
+    border-top: 1px solid #E8E4E3;
+    background-color: #F5F1F0;
+    padding: 4px;
+    overflow: hidden;
+  }
+  
+  .nice h3 {
+    font-family: 'Roboto Condensed', sans-serif;
+    margin: .3em 0 0;
+  }
+  
+  .nice-content {
+    width: 100%;
+    overflow: hidden;
+    font-size: 13px;
+    padding-top: .4em;
+  }
+  
 </style>
 <title>Rhizome</title>
 </head>
 <body>
   <div id="container">
-    <div id="canvas"></div>
+    <div id="canvas">
+      <div class="nice">
+        <div class="nice-title">
+          <h3>Node Title</h3>
+        </div>
+        <div class="nice-content">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ante libero, bibendum quis fringilla in, volutpat eu sem. Nam eget ex quis diam lobortis volutpat. Quisque aliquet risus non enim vulputate, nec porttitor lorem pretium. Nulla rutrum metus sit amet interdum porttitor. Phasellus consequat metus ut nibh placerat, ut placerat quam sodales. Aliquam nec hendrerit tellus. Duis ut justo nibh. Cras porta justo quis turpis auctor, ac tincidunt eros imperdiet. Maecenas eu nisi felis. Sed nisl ex, porttitor eu elit eu, vehicula interdum nunc. Donec mi enim, cursus quis dignissim eu, vestibulum eget libero.
+        </div>
+      </div>
+    </div>
   </div>
   <script type="text/javascript" src="domtest.js"></script>
 </body>

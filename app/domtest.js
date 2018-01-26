@@ -99,20 +99,6 @@
         .style('height', function(d) { return d.h + 'px'; })
         .style('transform', function(d) { return 'translate(' + d.x + 'px,' + d.y + 'px)'})
         .call(nodeDrag);
-    //   .attr('cx', function(d) { return d.value.x; })
-    //   .attr('cy', function(d) { return d.value.y; })
-    //   .attr('r', 50)
-    //   .style('fill', function(d) { return d.value.color; })
-    //   .call(nodeDrag)
-    // .enter()
-    //   .append('circle')
-    //   .attr('cx', function(d) { return d.value.x; })
-    //   .attr('cy', function(d) { return d.value.y; })
-    //   .attr('r', 50)
-    //   .style('fill', function(d) { return d.value.color; })
-    //   .call(nodeDrag)
-    // .exit()
-    //   .remove();
   }
   
   // db.ref('nodes').on('value', function(snapshot) {
