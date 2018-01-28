@@ -28,14 +28,13 @@
   
   var currentTransform = d3.zoomIdentity;
 
-  var canvas = d3.select('#canvas');
   var container = d3.select('#container')
-    .append('div')
+  var canvas = container.append('div')
     .attr('id', 'canvas')
     .style('width', '100%')
     .style('height', '100vh')
-    .style('min-height', '100vh')
-    .call(d3.zoom()
+    .style('min-height', '100vh');
+  container.call(d3.zoom()
       .scaleExtent([0.6, 3])
       .on('zoom', function() {
         currentTransform = d3.event.transform;
