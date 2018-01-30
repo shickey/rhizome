@@ -25,146 +25,186 @@
   firebase.initializeApp(firebaseConfig);
   
   var db = firebase.database();
+  var data = [];
   
-  var addingEdge = null;
+  var currentTransform = d3.zoomIdentity;
 
-  // var initialZoom = d3.zoomIdentity.translate((-document.body.clientWidth / 2), (-document.body.clientHeight / 2)).scale(1);
-  var zoom = d3.zoom()
-    .filter(function() {
-      return (!d3.event.button && !d3.event.altKey);
-    })
-    .on('zoom', function() {
-      svg.attr('transform', d3.event.transform);
-    });
-  var svg = d3.select('body')
-    .append('svg')
-    .attr('width', '100%')
-    .attr('height', '100%')
-    .call(zoom)
-    .append('g');
+  var container = d3.select('#container')
+  var canvas = container.append('div')
+    .attr('id', 'canvas')
+    .style('width', '100%')
+    .style('height', '100vh')
+    .style('min-height', '100vh');
+  container.call(d3.zoom()
+      .scaleExtent([0.6, 3])
+      .on('zoom', function() {
+        currentTransform = d3.event.transform;
+        var transformString = 'matrix(' + currentTransform.k + ',0,0,' + currentTransform.k + ',' + currentTransform.x + ',' + currentTransform.y + ')';
+        canvas.style('transform', transformString);
+      }));
   
-  var nodeData = [];
-  var edgeData = [];
+  const RESIZE_MARGIN = 4; // px in screen space
+  var ResizeTypes = {
+    NONE:  1 << 0,
+    NORTH: 1 << 1,
+    EAST:  1 << 2,
+    SOUTH: 1 << 3,
+    WEST:  1 << 4
+  }
+  var shouldResize = ResizeTypes.NONE;
+  var resizing = false;
+  
+  function nodeMouseEnter(d) {
+    if (resizing) { return; }
+    updateResizeCursor(this, d);
+  }
+  
+  function nodeMouseMove(d) {
+    if (resizing) { return; }
+    updateResizeCursor(this, d);
+  }
+  
+  function nodeMouseLeave() {
+    var body = d3.select("body");
+    if (!resizing) {
+      body.style('cursor', null);
+      shouldResize = ResizeTypes.NONE;
+    }
+  }
+  
+  function updateResizeCursor(node, d) {
+    var body = d3.select("body");
+    var locationInNode = d3.mouse(node);
+    var x = locationInNode[0] / currentTransform.k;
+    var y = locationInNode[1] / currentTransform.k;
+    var projectedMargin = RESIZE_MARGIN / currentTransform.k;
+    
+    if (x < projectedMargin) {
+      if (y < projectedMargin) {
+        body.style('cursor', 'nw-resize');
+        shouldResize = ResizeTypes.NORTH | ResizeTypes.WEST;
+      }
+      else if (y > d.value.h - projectedMargin) {
+        body.style('cursor', 'sw-resize');
+        shouldResize = ResizeTypes.SOUTH | ResizeTypes.WEST;
+      }
+      else {
+        body.style('cursor', 'w-resize');
+        shouldResize = ResizeTypes.WEST;
+      }
+    }
+    else if (x > d.value.w - projectedMargin) {
+      if (y < projectedMargin) {
+        body.style('cursor', 'ne-resize');
+        shouldResize = ResizeTypes.NORTH | ResizeTypes.EAST;
+      }
+      else if (y > d.value.h - projectedMargin) {
+        body.style('cursor', 'se-resize');
+        shouldResize = ResizeTypes.SOUTH | ResizeTypes.EAST;
+      }
+      else {
+        body.style('cursor', 'e-resize');
+        shouldResize = ResizeTypes.EAST;
+      }
+    }
+    else if (y < projectedMargin) {
+      body.style('cursor', 'n-resize');
+      shouldResize = ResizeTypes.NORTH;
+    }
+    else if (y > d.value.h - projectedMargin) {
+      body.style('cursor', 's-resize');
+      shouldResize = ResizeTypes.SOUTH;
+    }
+    else {
+      body.style('cursor', null);
+      shouldResize = ResizeTypes.NONE;
+    }
+  }
   
   function nodeDragStart(d) {
     d3.select(this).raise();
+    if (shouldResize !== ResizeTypes.NONE) {
+      resizing = true;
+    }
   }
   
   function nodeDragDragging(d) {
-    var newX = d.value.x + d3.event.dx;
-    var newY = d.value.y + d3.event.dy;
-    d.value.x = newX;
-    d.value.y = newY;
-    d3.select(this)
-      .attr('cx', newX)
-      .attr('cy', newY);
-    updateEdges();
+    var node = d3.select(this);
+    var deltaX = d3.event.dx / currentTransform.k;
+    var deltaY = d3.event.dy / currentTransform.k;
+    if (resizing) {
+      if (shouldResize & ResizeTypes.SOUTH) {
+        d.value.h += deltaY;
+        node.style('height', d.value.h + 'px');
+      }
+      if (shouldResize & ResizeTypes.NORTH) {
+        d.value.y += deltaY;
+        d.value.h -= deltaY;
+        node.style('height', d.value.h + 'px');
+        node.style('transform', function(d) { return 'translate(' + d.value.x + 'px,' + d.value.y + 'px)'});
+      }
+      if (shouldResize & ResizeTypes.EAST) {
+        d.value.w += deltaX;
+        node.style('width', d.value.w + 'px');
+      }
+      if (shouldResize & ResizeTypes.WEST) {
+        d.value.x += deltaX;
+        d.value.w -= deltaX;
+        node.style('width', d.value.w + 'px');
+        node.style('transform', function(d) { return 'translate(' + d.value.x + 'px,' + d.value.y + 'px)'});
+      }
+    }
+    else {
+      d.value.x += deltaX;
+      d.value.y += deltaY;
+      node.style('transform', function(d) { return 'translate(' + d.value.x + 'px,' + d.value.y + 'px)'});
+    }
+    
   }
   
   function nodeDragEnd(d) {
+    if (resizing) {
+      resizing = false;
+      updateResizeCursor(this, d);
+    }
     db.ref('nodes/' + d.key).set(d.value);
   }
   
   var nodeDrag = d3.drag()
-    .filter(function() {
-      return (!d3.event.button && !d3.event.altKey);
-    })
     .on('start', nodeDragStart)
     .on('drag', nodeDragDragging)
     .on('end', nodeDragEnd);
   
-  // TODO: This is the wrong way to do this. We should instead
-  //       capture mouse events on ths svg area and check to see
-  //       if those intersect nodes. Currently, this causes bugs
-  //       e.g., when the user alt-clicks a node, releases over blank
-  //       canvas, then click again over blank canvas and releases
-  //       over a different node (which should not create an edge
-  //       but it currently does)
-  function nodeMouseDown(d) {
-    if (d3.event.altKey && !addingEdge) {
-      // Capture the id of the first node
-      addingEdge = d.key;
-    }
-  }
-  
-  function nodeMouseUp(d) {
-    if (addingEdge && d.key !== addingEdge) {
-      // If we've successfully dragged to a different node,
-      // create an edge
-      //
-      // TODO: Should it be possible to create an edge
-      //       with the same start and end node?
-      //
-      // TODO: Should we check for duplicate edges?
-      edgeData.push({
-        start: addingEdge,
-        end: d.key
-      });
-    }
-    addingEdge = null;
-    updateEdges();
-  }
-  
   function updateNodes() {
-    var nodes = svg.selectAll('circle')
-      .data(d3.entries(nodeData));
-    
+    var nodes = canvas.selectAll('div.node')
+      .data(data, function(d) { return d.key; });
+
     nodes.exit().remove();
+
+    var entering = nodes.enter().append('div')
+        .attr('class', 'node');
+
+    entering.append('div')
+        .attr('class', 'node-title')
+      .append('h3')
+        .text(function(d) { return d.value.title; });
     
-    var updateAndEnter = nodes.enter()
-        .append('circle')
-      .merge(nodes);
-      
-    updateAndEnter.attr('cx', function(d) { return d.value.x; })
-      .attr('cy', function(d) { return d.value.y; })
-      .attr('r', 50);
-    
-    updateAndEnter.style('fill', function(d) { return d.value.color; })
+    entering.append('div')
+        .attr('class', 'node-content')
+        .text(function(d) { return d.value.content; });    
+
+    entering.merge(nodes)
+        .style('width', function(d) { return d.value.w + 'px'; })
+        .style('height', function(d) { return d.value.h + 'px'; })
+        .style('transform', function(d) { return 'translate(' + d.value.x + 'px,' + d.value.y + 'px)'})
         .call(nodeDrag)
-        .on('mousedown', nodeMouseDown)
-        .on('mouseup', nodeMouseUp);
-        
-        
-    var textboxes = svg.selectAll('foreignObject')
-      .data(d3.entries(nodeData));
-    
-    textboxes.exit().remove();
-    
-    textboxes.enter().append('foreignObject')
-      .append('xhtml:div')
-        .append('div')
-          .attr('width', '100%')
-          .attr('height', '100%')
-          .html('hello world!')
-      .merge(textboxes)
-        .attr('x', function(d) { return d.value.x; })
-        .attr('y', function(d) { return d.value.y; })
-        .attr('width', 300)
-        .attr('height', 300)
-        
-    
-    updateEdges();
-  }
-  
-  function updateEdges() {
-    var edges = svg.selectAll('line')
-      .data(edgeData);
-    
-    edges.exit().remove();
-    
-    edges.enter()
-        .append('line')
-      .merge(edges)
-        .attr('x1', function(d) { return nodeData[d.start].x; })
-        .attr('y1', function(d) { return nodeData[d.start].y; })
-        .attr('x2', function(d) { return nodeData[d.end].x; })
-        .attr('y2', function(d) { return nodeData[d.end].y; })
-        .attr('stroke-width', 2)
-        .attr('stroke', 'black');
+        .on('mouseenter', nodeMouseEnter)
+        .on('mousemove',  nodeMouseMove)
+        .on('mouseleave', nodeMouseLeave);
   }
   
   db.ref('nodes').on('value', function(snapshot) {
-    nodeData = snapshot.val();
+    data = d3.entries(snapshot.val());
     updateNodes();
   });
   
