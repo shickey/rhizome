@@ -62,7 +62,13 @@ nodesRef.set({})
       updates[nodesRef.push().key] = d;
     })
     nodesRef.update(updates).then(function() {
-      process.exit();
+      db.ref('transform').set({
+        k: 1,
+        x: 0,
+        y: 0
+      }).then(function() {
+        process.exit();
+      });
     });
   });
  
