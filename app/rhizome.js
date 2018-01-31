@@ -245,8 +245,10 @@
   });
   
   db.ref('transform').on('value', function(snapshot) {
-    zoom.transform(canvas, snapshot.val());
-  })
+    var t = snapshot.val();
+    var newTransform = d3.zoomIdentity.translate(t.x, t.y).scale(t.k);
+    container.call(zoom.transform, newTransform);
+  });
   
   updateNodes();
   
