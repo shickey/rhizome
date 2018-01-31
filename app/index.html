@@ -15,29 +15,34 @@
   .node {
     font-family: 'Lato', sans-serif;
     position: absolute;
-    top: 100px;
-    left: 400px;
-    width: 200px;
-    height: 300px;
     border-right: 1px solid #CFCBCA;
     border-bottom: 1px solid #CFCBCA;
     border-left: 1px solid #E8E4E3;
     border-top: 1px solid #E8E4E3;
     background-color: #F5F1F0;
-    padding: 4px;
+    padding: 0 4px;
     overflow: hidden;
   }
   
+  .node-title {
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    word-break: break-all; 
+    word-wrap: break-word;
+    text-overflow: ellipsis;
+  }
+  
   .node h3 {
+    display: inline-block;
     font-family: 'Roboto Condensed', sans-serif;
-    margin: .3em 0 0;
+    margin: 5px 0;
   }
   
   .node-content {
     width: 100%;
     overflow: hidden;
     font-size: 13px;
-    padding-top: .4em;
   }
 
 </style>

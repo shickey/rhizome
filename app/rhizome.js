@@ -44,6 +44,8 @@
       }));
   
   const RESIZE_MARGIN = 4; // px in screen space
+  const MIN_NODE_HEIGHT = 32; // px in local node coordinates
+  const MIN_NODE_WIDTH  = 64; // px in local node coordinates
   var ResizeTypes = {
     NONE:  1 << 0,
     NORTH: 1 << 1,
@@ -53,6 +55,7 @@
   }
   var shouldResize = ResizeTypes.NONE;
   var resizing = false;
+  var resizeOrigin = null;
   
   function nodeMouseEnter(d) {
     if (resizing) { return; }
@@ -125,38 +128,58 @@
     d3.select(this).raise();
     if (shouldResize !== ResizeTypes.NONE) {
       resizing = true;
+      resizeOrigin = {
+        x: d.value.x,
+        y: d.value.y,
+        w: d.value.w,
+        h: d.value.h
+      }
     }
   }
   
   function nodeDragDragging(d) {
     var node = d3.select(this);
-    var deltaX = d3.event.dx / currentTransform.k;
-    var deltaY = d3.event.dy / currentTransform.k;
     if (resizing) {
+      
+      var mouseX = d3.event.x / currentTransform.k;
+      var mouseY = d3.event.y / currentTransform.k;
+      
+      console.log("mouseX: " + mouseX + ", mouseY: " + mouseY + ", d.y: " + d.value.y + ", d.h: " + d.value.h);
+      
       if (shouldResize & ResizeTypes.SOUTH) {
-        d.value.h += deltaY;
+        d.value.h = Math.max(mouseY - resizeOrigin.y, MIN_NODE_HEIGHT);
         node.style('height', d.value.h + 'px');
       }
       if (shouldResize & ResizeTypes.NORTH) {
-        d.value.y += deltaY;
-        d.value.h -= deltaY;
+        d.value.h = Math.max(resizeOrigin.h - (mouseY - resizeOrigin.y), MIN_NODE_HEIGHT);
+        if (d.value.h === MIN_NODE_HEIGHT) {
+          d.value.y = resizeOrigin.y + resizeOrigin.h - MIN_NODE_HEIGHT;
+        }
+        else {
+          d.value.y = mouseY;
+        }
         node.style('height', d.value.h + 'px');
         node.style('transform', function(d) { return 'translate(' + d.value.x + 'px,' + d.value.y + 'px)'});
       }
       if (shouldResize & ResizeTypes.EAST) {
-        d.value.w += deltaX;
+        d.value.w = Math.max(mouseX - resizeOrigin.x, MIN_NODE_WIDTH);;
         node.style('width', d.value.w + 'px');
       }
       if (shouldResize & ResizeTypes.WEST) {
-        d.value.x += deltaX;
-        d.value.w -= deltaX;
+        d.value.w = Math.max(resizeOrigin.w - (mouseX - resizeOrigin.x), MIN_NODE_WIDTH);
+        if (d.value.w === MIN_NODE_WIDTH) {
+          d.value.x = resizeOrigin.x + resizeOrigin.w - MIN_NODE_WIDTH;
+        }
+        else {
+          d.value.x = mouseX;
+        }
         node.style('width', d.value.w + 'px');
         node.style('transform', function(d) { return 'translate(' + d.value.x + 'px,' + d.value.y + 'px)'});
       }
     }
     else {
-      d.value.x += deltaX;
-      d.value.y += deltaY;
+      d.value.x += d3.event.dx / currentTransform.k;
+      d.value.y += d3.event.dy / currentTransform.k;
       node.style('transform', function(d) { return 'translate(' + d.value.x + 'px,' + d.value.y + 'px)'});
     }
     
@@ -165,6 +188,7 @@
   function nodeDragEnd(d) {
     if (resizing) {
       resizing = false;
+      resizeOrigin = null;
       updateResizeCursor(this, d);
     }
     db.ref('nodes/' + d.key).set(d.value);
