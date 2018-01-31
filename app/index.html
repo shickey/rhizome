@@ -5,51 +5,16 @@
   <script src="https://www.gstatic.com/firebasejs/4.8.2/firebase.js"></script>
   <script src="https://d3js.org/d3.v4.min.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Lato:300|Roboto+Condensed" rel="stylesheet">
-  <style>
-  *, *:before, *:after {
-    box-sizing: border-box;
-  }
-  
-  body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
-
-  .node {
-    font-family: 'Lato', sans-serif;
-    position: absolute;
-    border-right: 1px solid #CFCBCA;
-    border-bottom: 1px solid #CFCBCA;
-    border-left: 1px solid #E8E4E3;
-    border-top: 1px solid #E8E4E3;
-    background-color: #F5F1F0;
-    padding: 0 4px;
-    overflow: hidden;
-  }
-  
-  .node-title {
-    width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    word-break: break-all; 
-    word-wrap: break-word;
-    text-overflow: ellipsis;
-  }
-  
-  .node h3 {
-    display: inline-block;
-    font-family: 'Roboto Condensed', sans-serif;
-    margin: 5px 0;
-  }
-  
-  .node-content {
-    width: 100%;
-    overflow: hidden;
-    font-size: 13px;
-  }
-
-</style>
+  <link rel="stylesheet" type="text/css" href="rhizome.css">
 <title>Rhizome</title>
 </head>
 <body>
-  <div id="container"></div>
+  <div class="col-left">
+    <div class="rhizome-container"></div>
+  </div>
+  <div class="col-right info">
+    <h1>Rhizome</h1>
+  </div>
   <script type="text/javascript" src="rhizome.js"></script>
 </body>
 </html>

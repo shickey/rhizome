@@ -29,12 +29,12 @@
   
   var currentTransform = d3.zoomIdentity;
 
-  var container = d3.select('#container')
+  var container = d3.select('.rhizome-container')
   var canvas = container.append('div')
     .attr('id', 'canvas')
     .style('width', '100%')
     .style('height', '100vh')
-    .style('min-height', '100vh');
+    .style('min-height', '100vh')
   container.call(d3.zoom()
       .scaleExtent([0.6, 3])
       .on('zoom', function() {

@@ -1,0 +1,88 @@
+/*
+ * Rhizome
+ *
+ * Collective knowledge building
+ *
+ * Sean Hickey
+ * MIT Media Lab, Lifelong Kindergarten Group
+ * 31 Jan 2018
+ *
+ */
+
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+body { 
+  margin:0;
+  position:fixed;
+  top:0;
+  right:0;
+  bottom:0;
+  left:0;
+  font-family: 'Lato', sans-serif;
+}
+
+/* Overall Layout */
+
+.col-left {
+  float: left;
+  width: 75%;
+  height: 100vh;
+}
+
+.col-right {
+  float: left;
+  width: 25%;
+  height: 100vh;
+  background-color: #686766;
+  color: #E8E4E3;
+}
+
+.rhizome-container {
+  overflow: hidden;
+}
+
+
+/* Graph Nodes */
+.node {
+  position: absolute;
+  border-right: 1px solid #CFCBCA;
+  border-bottom: 1px solid #CFCBCA;
+  border-left: 1px solid #E8E4E3;
+  border-top: 1px solid #E8E4E3;
+  background-color: #F5F1F0;
+  padding: 0 4px;
+  overflow: hidden;
+}
+
+.node-title {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  word-break: break-all; 
+  word-wrap: break-word;
+  text-overflow: ellipsis;
+}
+
+.node-title h3 {
+  display: inline-block;
+  font-family: 'Roboto Condensed', sans-serif;
+  margin: 5px 0;
+}
+
+.node-content {
+  width: 100%;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+/* Right column */
+
+.info {
+  padding: 0 6px;
+}
+
+.info h1 {
+  text-align: center;
+}
