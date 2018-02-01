@@ -27,6 +27,8 @@
   var db = firebase.database();
   var data = [];
   
+  var selectedNode = null;
+  
   var transformUpdateTimer = null;
   
   var currentTransform = d3.zoomIdentity;
@@ -139,7 +141,8 @@
   }
   
   function nodeDragStart(d) {
-    d3.select(this).raise();
+    var node = d3.select(this);
+    node.raise();
     if (shouldResize !== ResizeTypes.NONE) {
       resizing = true;
       resizeOrigin = {
@@ -149,6 +152,7 @@
         h: d.value.h
       }
     }
+    selectNode(node);
   }
   
   function nodeDragDragging(d) {
@@ -210,6 +214,23 @@
     .on('start', nodeDragStart)
     .on('drag', nodeDragDragging)
     .on('end', nodeDragEnd);
+    
+  function selectNode(node) {
+    if (selectedNode) {
+      selectedNode.classed('selected', false);
+      document.getElementById('node-edit-title').value = "";
+      document.getElementById('node-edit-content').value = "";
+      d3.select('.node-editor').classed('hidden', true);
+    }
+    if (node) {
+      node.classed('selected', true);
+      selectedNode = node;
+      var d = node.datum();
+      document.getElementById('node-edit-title').value = d.value.title;
+      document.getElementById('node-edit-content').value = d.value.content;
+      d3.select('.node-editor').classed('hidden', false);
+    }
+  }
   
   function updateNodes() {
     var nodes = canvas.selectAll('div.node')

@@ -8,81 +8,104 @@
  * 31 Jan 2018
  *
  */
-
+/* Initial Design Colors */
+/* "Das Boot" Color Scheme */
+/* "Early Morning" */
+/* "Mountain" Color Scheme */
 *, *:before, *:after {
-  box-sizing: border-box;
-}
+  box-sizing: border-box; }
 
-body { 
-  margin:0;
-  position:fixed;
-  top:0;
-  right:0;
-  bottom:0;
-  left:0;
-  font-family: 'Lato', sans-serif;
-}
+body {
+  margin: 0;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  font-family: "Lato", sans-serif; }
 
 /* Overall Layout */
-
 .col-left {
   float: left;
   width: 75%;
-  height: 100vh;
-}
+  height: 100vh; }
 
 .col-right {
   float: left;
   width: 25%;
-  height: 100vh;
-  background-color: #686766;
-  color: #E8E4E3;
-}
+  height: 100vh; }
 
 .rhizome-container {
   overflow: hidden;
-}
-
+  background-color: #3A4554; }
 
 /* Graph Nodes */
 .node {
   position: absolute;
-  border-right: 1px solid #CFCBCA;
-  border-bottom: 1px solid #CFCBCA;
-  border-left: 1px solid #E8E4E3;
-  border-top: 1px solid #E8E4E3;
-  background-color: #F5F1F0;
+  border-right: 3px solid #ffebb1;
+  border-bottom: 3px solid #ffebb1;
+  border-left: 3px solid #fff1cb;
+  border-top: 3px solid #fff1cb;
+  background-color: #FFF8E4;
   padding: 0 4px;
-  overflow: hidden;
-}
+  overflow: hidden; }
+
+.node.selected {
+  background-color: #C9EBB5;
+  border-right: 3px solid #ace08d;
+  border-bottom: 3px solid #ace08d;
+  border-left: 3px solid #bae6a1;
+  border-top: 3px solid #bae6a1; }
 
 .node-title {
   width: 100%;
   white-space: nowrap;
   overflow: hidden;
-  word-break: break-all; 
+  word-break: break-all;
   word-wrap: break-word;
-  text-overflow: ellipsis;
-}
+  text-overflow: ellipsis; }
 
 .node-title h3 {
   display: inline-block;
-  font-family: 'Roboto Condensed', sans-serif;
-  margin: 5px 0;
-}
+  font-family: "Roboto Condensed", sans-serif;
+  margin: 5px 0; }
 
 .node-content {
   width: 100%;
   overflow: hidden;
-  font-size: 13px;
-}
+  font-size: 13px; }
 
 /* Right column */
-
 .info {
-  padding: 0 6px;
-}
+  background-color: #222028;
+  color: #FFF8E4;
+  padding: 0 18px; }
 
 .info h1 {
-  text-align: center;
-}
+  text-align: center; }
+
+.form-group {
+  margin-bottom: 13px; }
+
+label, input, textarea {
+  width: 100%; }
+
+label {
+  font-family: "Lato", sans-serif; }
+
+input, textarea {
+  font-family: "Lato", sans-serif;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px; }
+
+textarea {
+  min-height: 12em;
+  resize: vertical; }
+
+/* General Utilities */
+.hidden {
+  display: none; }
+
+/*# sourceMappingURL=rhizome.css.map */

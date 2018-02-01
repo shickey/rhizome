@@ -1,0 +1,161 @@
+/*
+ * Rhizome
+ *
+ * Collective knowledge building
+ *
+ * Sean Hickey
+ * MIT Media Lab, Lifelong Kindergarten Group
+ * 31 Jan 2018
+ *
+ */
+ 
+$rhizome-font: 'Lato', sans-serif;
+$rhizome-title-font: 'Roboto Condensed', sans-serif;
+ 
+/* Initial Design Colors */
+// $node-color: #f5f1f0;
+// $canvas-color: #fff;
+// $info-bg-color: #686766;
+// $info-text-color: #e8e4e3;
+ 
+/* "Das Boot" Color Scheme */
+// $node-color: #F2EDE4;
+// $canvas-color: lighten($node-color, 7%);
+// $info-bg-color: #2F3540;
+// $info-text-color: $node-color;
+
+// $node-color: lighten(#F2EDE4, 1%);
+// $canvas-color: darken(#666A73, 10%);
+// $info-bg-color: darken(#2F3540, 10%);
+// $info-text-color: #D9D1C7;
+// $node-selected-color: #EBCB00;
+
+/* "Early Morning" */
+$node-color: #FFF8E4;
+$canvas-color: #3A4554;
+$info-bg-color: #222028;
+$info-text-color: $node-color;
+$node-selected-color: #C9EBB5;
+
+/* "Mountain" Color Scheme */
+// $node-color: #F1EBE1;
+// $canvas-color: lighten($node-color, 7%);
+// $info-bg-color: #3C4458;
+// $info-text-color: $node-color;
+
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+body { 
+  margin:0;
+  position:fixed;
+  top:0;
+  right:0;
+  bottom:0;
+  left:0;
+  font-family: $rhizome-font;
+}
+
+/* Overall Layout */
+
+.col-left {
+  float: left;
+  width: 75%;
+  height: 100vh;
+}
+
+.col-right {
+  float: left;
+  width: 25%;
+  height: 100vh;
+}
+
+.rhizome-container {
+  overflow: hidden;
+  background-color: $canvas-color;
+}
+
+/* Graph Nodes */
+.node {
+  position: absolute;
+  border-right: 3px solid darken($node-color, 10%);
+  border-bottom: 3px solid darken($node-color, 10%);
+  border-left: 3px solid darken($node-color, 5%);
+  border-top: 3px solid darken($node-color, 5%);
+  background-color: $node-color;
+  padding: 0 4px;
+  overflow: hidden;
+}
+
+.node.selected {
+  background-color: $node-selected-color;
+  border-right: 3px solid darken($node-selected-color, 10%);
+  border-bottom: 3px solid darken($node-selected-color, 10%);
+  border-left: 3px solid darken($node-selected-color, 5%);
+  border-top: 3px solid darken($node-selected-color, 5%);
+}
+
+.node-title {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  word-break: break-all; 
+  word-wrap: break-word;
+  text-overflow: ellipsis;
+}
+
+.node-title h3 {
+  display: inline-block;
+  font-family: $rhizome-title-font;
+  margin: 5px 0;
+}
+
+.node-content {
+  width: 100%;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+/* Right column */
+
+.info {
+  background-color: $info-bg-color;
+  color: $info-text-color;
+  padding: 0 18px;
+}
+
+.info h1 {
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 13px;
+}
+
+label, input, textarea {
+  width: 100%;
+}
+
+label {
+  font-family: $rhizome-font;
+}
+
+input, textarea {
+  font-family: $rhizome-font;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+textarea {
+  min-height: 12em;
+  resize: vertical;
+}
+
+/* General Utilities */
+
+.hidden {
+  display: none;
+}
