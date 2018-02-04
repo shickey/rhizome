@@ -1,6 +1,10 @@
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+
 module.exports = {
   entry: [
-    './src/rhizome.js'
+    './src/js/App.jsx',
+    './src/css/rhizome.scss'
   ],
   module: {
     rules: [
@@ -8,6 +12,19 @@ module.exports = {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: ['babel-loader']
+      },
+      {
+        test: /\.scss$/,
+        loader: ExtractTextPlugin.extract({
+          use: [{
+            loader: 'css-loader',
+            options: { sourceMap: true }
+          },
+          {
+            loader: 'sass-loader',
+            options: { sourceMap: true }
+          }]
+        })
       }
     ]
   },
@@ -16,10 +33,16 @@ module.exports = {
   },
   output: {
     path: __dirname + '/dist',
-    publicPath: '/',
     filename: 'bundle.js'
   },
-  devServer: {
-    contentBase: './dist'
-  }
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: __dirname + '/src/index.html'
+    }),
+    new ExtractTextPlugin({
+      filename: 'bundle.css',
+      allChunks: true
+    })
+  ],
+  devtool: "source-map"
 };

@@ -1,3 +1,7 @@
+import React from 'react';
+import firebase from 'firebase';
+import * as d3 from 'd3';
+
 /*
  * Rhizome
  *
@@ -9,81 +13,108 @@
  *
  */
 
-;(function() {
+class Graph extends React.Component {
 
-  'use strict';
+  componentDidMount() {
+    // Initialize Firebase
+    var firebaseConfig = {
+      apiKey: "AIzaSyBaWc2sIScNik2lrUdr4DQOz1tyC_F48Ww",
+      authDomain: "rhizome-18e8b.firebaseapp.com",
+      databaseURL: "https://rhizome-18e8b.firebaseio.com",
+      projectId: "rhizome-18e8b",
+      storageBucket: "rhizome-18e8b.appspot.com",
+      messagingSenderId: "614011893394"
+    };
+    firebase.initializeApp(firebaseConfig);
+    
+    this.db = firebase.database();
+    this.data = [];
+    
+    this.selectedNode = null;
+    
+    this.transformUpdateTimer = null;
+    
+    this.currentTransform = d3.zoomIdentity;
+    
+    this.container = d3.select('.rhizome-container');
+    this.canvas = container.append('div')
+      .attr('id', 'canvas')
+      .style('width', '100%')
+      .style('height', '100vh')
+      .style('min-height', '100vh');
 
-  // Initialize Firebase
-  var firebaseConfig = {
-    apiKey: "AIzaSyBaWc2sIScNik2lrUdr4DQOz1tyC_F48Ww",
-    authDomain: "rhizome-18e8b.firebaseapp.com",
-    databaseURL: "https://rhizome-18e8b.firebaseio.com",
-    projectId: "rhizome-18e8b",
-    storageBucket: "rhizome-18e8b.appspot.com",
-    messagingSenderId: "614011893394"
-  };
-  firebase.initializeApp(firebaseConfig);
-  
-  var db = firebase.database();
-  var data = [];
-  
-  var selectedNode = null;
-  
-  var transformUpdateTimer = null;
-  
-  var currentTransform = d3.zoomIdentity;
-  
-  var container = d3.select('.rhizome-container');
-  var canvas = container.append('div')
-    .attr('id', 'canvas')
-    .style('width', '100%')
-    .style('height', '100vh')
-    .style('min-height', '100vh')
-  var zoom = d3.zoom()
-    .scaleExtent([0.6, 3])
-    .on('zoom', function() {
-      currentTransform = d3.event.transform;
-      var transformString = 'matrix(' + currentTransform.k + ',0,0,' + currentTransform.k + ',' + currentTransform.x + ',' + currentTransform.y + ')';
-      canvas.style('transform', transformString);
-      
-      // Only update the transform in firebase after the transform hasn't changed for a full second
-      if (transformUpdateTimer) {
-        window.clearTimeout(transformUpdateTimer);
-        transformUpdateTimer = null;
-      }
-      transformUpdateTimer = window.setTimeout(function() {
-        db.ref('transform').set(currentTransform);
-        transformUpdateTimer = null;
-      }, 1000);
-      
+    this.zoom = d3.zoom()
+      .scaleExtent([0.6, 3])
+      .on('zoom', function() {
+        currentTransform = d3.event.transform;
+        var transformString = 'matrix(' + currentTransform.k + ',0,0,' + currentTransform.k + ',' + currentTransform.x + ',' + currentTransform.y + ')';
+        canvas.style('transform', transformString);
+        
+        // Only update the transform in firebase after the transform hasn't changed for a full second
+        if (transformUpdateTimer) {
+          window.clearTimeout(transformUpdateTimer);
+          transformUpdateTimer = null;
+        }
+        transformUpdateTimer = window.setTimeout(function() {
+          db.ref('transform').set(currentTransform);
+          transformUpdateTimer = null;
+        }, 1000);
+        
+      });
+    container.call(zoom);
+    
+    this.RESIZE_MARGIN = 4; // px in screen space
+    this.MIN_NODE_HEIGHT = 32; // px in local node coordinates
+    this.MIN_NODE_WIDTH  = 64; // px in local node coordinates
+    this.ResizeTypes = {
+      NONE:  1 << 0,
+      NORTH: 1 << 1,
+      EAST:  1 << 2,
+      SOUTH: 1 << 3,
+      WEST:  1 << 4
+    }
+    this.shouldResize = ResizeTypes.NONE;
+    this.resizing = false;
+    this.resizeOrigin = null;
+
+    this.nodeDrag = d3.drag()
+      .on('start', nodeDragStart)
+      .on('drag', nodeDragDragging)
+      .on('end', nodeDragEnd);
+    
+    db.ref('nodes').on('value', function(snapshot) {
+      data = d3.entries(snapshot.val());
+      updateNodes();
     });
-  container.call(zoom);
-  
-  const RESIZE_MARGIN = 4; // px in screen space
-  const MIN_NODE_HEIGHT = 32; // px in local node coordinates
-  const MIN_NODE_WIDTH  = 64; // px in local node coordinates
-  var ResizeTypes = {
-    NONE:  1 << 0,
-    NORTH: 1 << 1,
-    EAST:  1 << 2,
-    SOUTH: 1 << 3,
-    WEST:  1 << 4
+    
+    db.ref('transform').on('value', function(snapshot) {
+      var t = snapshot.val();
+      var newTransform = d3.zoomIdentity.translate(t.x, t.y).scale(t.k);
+      container.call(zoom.transform, newTransform);
+    });
+
+    this.updateNodes();
   }
-  var shouldResize = ResizeTypes.NONE;
-  var resizing = false;
-  var resizeOrigin = null;
-  
-  function nodeMouseEnter(d) {
+
+  render() {
+    return (
+      <div className="rhizome-container"></div>
+    );
+  }
+
+
+  /* Local functions */
+  nodeMouseEnter(d) {
     if (resizing) { return; }
     updateResizeCursor(this, d);
   }
   
-  function nodeMouseMove(d) {
+  nodeMouseMove(d) {
     if (resizing) { return; }
     updateResizeCursor(this, d);
   }
   
-  function nodeMouseLeave() {
+  nodeMouseLeave() {
     var body = d3.select("body");
     if (!resizing) {
       body.style('cursor', null);
@@ -91,7 +122,7 @@
     }
   }
   
-  function updateResizeCursor(node, d) {
+  updateResizeCursor(node, d) {
     var body = d3.select("body");
     var locationInNode = d3.mouse(node);
     var x = locationInNode[0] / currentTransform.k;
@@ -140,7 +171,7 @@
     }
   }
   
-  function nodeDragStart(d) {
+  nodeDragStart(d) {
     var node = d3.select(this);
     node.raise();
     if (shouldResize !== ResizeTypes.NONE) {
@@ -155,7 +186,7 @@
     selectNode(node);
   }
   
-  function nodeDragDragging(d) {
+  nodeDragDragging(d) {
     var node = d3.select(this);
     if (resizing) {
       
@@ -201,7 +232,7 @@
     
   }
   
-  function nodeDragEnd(d) {
+  nodeDragEnd(d) {
     if (resizing) {
       resizing = false;
       resizeOrigin = null;
@@ -210,12 +241,9 @@
     db.ref('nodes/' + d.key).set(d.value);
   }
   
-  var nodeDrag = d3.drag()
-    .on('start', nodeDragStart)
-    .on('drag', nodeDragDragging)
-    .on('end', nodeDragEnd);
+  
     
-  function selectNode(node) {
+  selectNode(node) {
     if (selectedNode) {
       selectedNode.classed('selected', false);
       document.getElementById('node-edit-title').value = "";
@@ -232,8 +260,8 @@
     }
   }
   
-  function updateNodes() {
-    var nodes = canvas.selectAll('div.node')
+  updateNodes() {
+    var nodes = this.canvas.selectAll('div.node')
       .data(data, function(d) { return d.key; });
 
     nodes.exit().remove();
@@ -259,18 +287,8 @@
         .on('mousemove',  nodeMouseMove)
         .on('mouseleave', nodeMouseLeave);
   }
-  
-  db.ref('nodes').on('value', function(snapshot) {
-    data = d3.entries(snapshot.val());
-    updateNodes();
-  });
-  
-  db.ref('transform').on('value', function(snapshot) {
-    var t = snapshot.val();
-    var newTransform = d3.zoomIdentity.translate(t.x, t.y).scale(t.k);
-    container.call(zoom.transform, newTransform);
-  });
-  
-  updateNodes();
-  
-})();
+
+
+}
+
+export default Graph;
