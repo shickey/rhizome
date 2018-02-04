@@ -12,10 +12,40 @@ import * as d3 from 'd3';
  * 17 Jan 2018
  *
  */
+ 
+var db = null;
+var data = [];
+var selectedNode = null;
+var transformUpdateTimer = null;
+
+var currentTransform = null;
+var container = null;
+var canvas = null;
+var zoom = null;
+
+const RESIZE_MARGIN = 4; // px in screen space
+const MIN_NODE_HEIGHT = 32; // px in local node coordinates
+const MIN_NODE_WIDTH  = 64; // px in local node coordinates
+
+var ResizeTypes = {
+      NONE:  1 << 0,
+      NORTH: 1 << 1,
+      EAST:  1 << 2,
+      SOUTH: 1 << 3,
+      WEST:  1 << 4
+    }
+var shouldResize = ResizeTypes.NONE;
+var resizing = false;
+var resizeOrigin = null;
+var nodeDrag = null;
+
+var self = null;
 
 class Graph extends React.Component {
 
   componentDidMount() {
+    self = this;
+    
     // Initialize Firebase
     var firebaseConfig = {
       apiKey: "AIzaSyBaWc2sIScNik2lrUdr4DQOz1tyC_F48Ww",
@@ -27,23 +57,18 @@ class Graph extends React.Component {
     };
     firebase.initializeApp(firebaseConfig);
     
-    this.db = firebase.database();
-    this.data = [];
+    db = firebase.database();
     
-    this.selectedNode = null;
+    currentTransform = d3.zoomIdentity;
     
-    this.transformUpdateTimer = null;
-    
-    this.currentTransform = d3.zoomIdentity;
-    
-    this.container = d3.select('.rhizome-container');
-    this.canvas = container.append('div')
+    container = d3.select('.rhizome-container');
+    canvas = container.append('div')
       .attr('id', 'canvas')
       .style('width', '100%')
       .style('height', '100vh')
       .style('min-height', '100vh');
 
-    this.zoom = d3.zoom()
+    zoom = d3.zoom()
       .scaleExtent([0.6, 3])
       .on('zoom', function() {
         currentTransform = d3.event.transform;
@@ -62,29 +87,15 @@ class Graph extends React.Component {
         
       });
     container.call(zoom);
-    
-    this.RESIZE_MARGIN = 4; // px in screen space
-    this.MIN_NODE_HEIGHT = 32; // px in local node coordinates
-    this.MIN_NODE_WIDTH  = 64; // px in local node coordinates
-    this.ResizeTypes = {
-      NONE:  1 << 0,
-      NORTH: 1 << 1,
-      EAST:  1 << 2,
-      SOUTH: 1 << 3,
-      WEST:  1 << 4
-    }
-    this.shouldResize = ResizeTypes.NONE;
-    this.resizing = false;
-    this.resizeOrigin = null;
 
-    this.nodeDrag = d3.drag()
-      .on('start', nodeDragStart)
-      .on('drag', nodeDragDragging)
-      .on('end', nodeDragEnd);
+    nodeDrag = d3.drag()
+      .on('start', this.nodeDragStart)
+      .on('drag', this.nodeDragDragging)
+      .on('end', this.nodeDragEnd);
     
     db.ref('nodes').on('value', function(snapshot) {
       data = d3.entries(snapshot.val());
-      updateNodes();
+      self.updateNodes();
     });
     
     db.ref('transform').on('value', function(snapshot) {
@@ -106,12 +117,12 @@ class Graph extends React.Component {
   /* Local functions */
   nodeMouseEnter(d) {
     if (resizing) { return; }
-    updateResizeCursor(this, d);
+    self.updateResizeCursor(this, d);
   }
   
   nodeMouseMove(d) {
     if (resizing) { return; }
-    updateResizeCursor(this, d);
+    self.updateResizeCursor(this, d);
   }
   
   nodeMouseLeave() {
@@ -183,7 +194,7 @@ class Graph extends React.Component {
         h: d.value.h
       }
     }
-    selectNode(node);
+    self.selectNode(node);
   }
   
   nodeDragDragging(d) {
@@ -236,7 +247,7 @@ class Graph extends React.Component {
     if (resizing) {
       resizing = false;
       resizeOrigin = null;
-      updateResizeCursor(this, d);
+      self.updateResizeCursor(this, d);
     }
     db.ref('nodes/' + d.key).set(d.value);
   }
@@ -261,7 +272,7 @@ class Graph extends React.Component {
   }
   
   updateNodes() {
-    var nodes = this.canvas.selectAll('div.node')
+    var nodes = canvas.selectAll('div.node')
       .data(data, function(d) { return d.key; });
 
     nodes.exit().remove();
@@ -283,9 +294,9 @@ class Graph extends React.Component {
         .style('height', function(d) { return d.value.h + 'px'; })
         .style('transform', function(d) { return 'translate(' + d.value.x + 'px,' + d.value.y + 'px)'})
         .call(nodeDrag)
-        .on('mouseenter', nodeMouseEnter)
-        .on('mousemove',  nodeMouseMove)
-        .on('mouseleave', nodeMouseLeave);
+        .on('mouseenter', this.nodeMouseEnter)
+        .on('mousemove',  this.nodeMouseMove)
+        .on('mouseleave', this.nodeMouseLeave);
   }
 
 
