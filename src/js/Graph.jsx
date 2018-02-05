@@ -1,6 +1,6 @@
-import React from 'react';
-import firebase from 'firebase';
-import * as d3 from 'd3';
+import React from 'react'
+import * as d3 from 'd3'
+import { withFirebase } from 'react-redux-firebase'
 
 /*
  * Rhizome
@@ -46,18 +46,7 @@ class Graph extends React.Component {
   componentDidMount() {
     self = this;
     
-    // Initialize Firebase
-    var firebaseConfig = {
-      apiKey: "AIzaSyBaWc2sIScNik2lrUdr4DQOz1tyC_F48Ww",
-      authDomain: "rhizome-18e8b.firebaseapp.com",
-      databaseURL: "https://rhizome-18e8b.firebaseio.com",
-      projectId: "rhizome-18e8b",
-      storageBucket: "rhizome-18e8b.appspot.com",
-      messagingSenderId: "614011893394"
-    };
-    firebase.initializeApp(firebaseConfig);
-    
-    db = firebase.database();
+    db = this.props.firebase.database();
     
     currentTransform = d3.zoomIdentity;
     
@@ -302,4 +291,4 @@ class Graph extends React.Component {
 
 }
 
-export default Graph;
+export default withFirebase(Graph)
