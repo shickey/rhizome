@@ -4,7 +4,9 @@ import { Provider } from 'react-redux'
 import { createStore, combineReducers, compose } from 'redux'
 import { reactReduxFirebase, firebaseReducer } from 'react-redux-firebase'
 import firebase from 'firebase'
+import selectedNode from './reducers/selection'
 import Graph from './Graph.jsx'
+import Sidebar from './Sidebar.jsx'
 
 const firebaseConfig = {
   apiKey: "AIzaSyBaWc2sIScNik2lrUdr4DQOz1tyC_F48Ww",
@@ -24,7 +26,8 @@ const createStoreWithFirebase = compose(
 )(createStore);
 
 const rootReducer = combineReducers({
-  firebase: firebaseReducer
+  firebase: firebaseReducer,
+  selectedNode
 });
 
 const store = createStoreWithFirebase(rootReducer, {});
@@ -37,19 +40,7 @@ const App = () => (
         <Graph />
       </div>
       <div className="col-right info">
-        <h1>Rhizome</h1>
-        <div className="node-editor hidden">
-          <form>
-            <div className="form-group">
-              <label htmlFor="node-edit-title">Title:</label>
-              <input type="text" id="node-edit-title" name="node-edit-title" />
-            </div>
-            <div className="form-group">
-              <label htmlFor="node-edit-content">Content:</label>
-              <textarea id="node-edit-content" name="node-edit-content"></textarea>
-            </div>
-          </form>
-        </div>
+        <Sidebar />
       </div>
     </div>
   </Provider>

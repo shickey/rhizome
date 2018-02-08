@@ -1,6 +1,9 @@
 import React from 'react'
+import { connect } from 'react-redux'
+import { compose } from 'redux'
 import * as d3 from 'd3'
 import { withFirebase } from 'react-redux-firebase'
+import { selectNode } from './actions'
 
 /*
  * Rhizome
@@ -244,20 +247,23 @@ class Graph extends React.Component {
   
     
   selectNode(node) {
-    if (selectedNode) {
-      selectedNode.classed('selected', false);
-      document.getElementById('node-edit-title').value = "";
-      document.getElementById('node-edit-content').value = "";
-      d3.select('.node-editor').classed('hidden', true);
-    }
-    if (node) {
-      node.classed('selected', true);
-      selectedNode = node;
-      var d = node.datum();
-      document.getElementById('node-edit-title').value = d.value.title;
-      document.getElementById('node-edit-content').value = d.value.content;
-      d3.select('.node-editor').classed('hidden', false);
-    }
+    if (!node) return;
+    this.props.onSelectNode(node.datum().key);
+
+    // if (selectedNode) {
+    //   selectedNode.classed('selected', false);
+    //   document.getElementById('node-edit-title').value = "";
+    //   document.getElementById('node-edit-content').value = "";
+    //   d3.select('.node-editor').classed('hidden', true);
+    // }
+    // if (node) {
+    //   node.classed('selected', true);
+    //   selectedNode = node;
+    //   var d = node.datum();
+    //   document.getElementById('node-edit-title').value = d.value.title;
+    //   document.getElementById('node-edit-content').value = d.value.content;
+    //   d3.select('.node-editor').classed('hidden', false);
+    // }
   }
   
   updateNodes() {
@@ -291,4 +297,17 @@ class Graph extends React.Component {
 
 }
 
-export default withFirebase(Graph)
+const mapStateToProps = state => { return {} }
+
+const mapDispatchToProps = dispatch => {
+  return {
+    onSelectNode: (id) => {
+      dispatch(selectNode(id));
+    }
+  }
+}
+
+export default compose(
+  withFirebase,
+  connect(mapStateToProps, mapDispatchToProps)
+)(Graph)
